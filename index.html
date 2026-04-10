@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Near Me - Elite Local Discovery</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Anton & Georgia/Times Fallbacks -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#404F66',
+                        'primary-dark': '#2D3748',
+                        'cta': '#E2C754',
+                        'cta-dark': '#C5A028',
+                        'highlight': '#49768A',
+                        'accent': '#936F2E',
+                        'selection-bg': '#8CA6B8',
+                        'bg-dark': '#0F172A',
+                    },
+                    fontFamily: {
+                        'anton': ['Anton', 'sans-serif'],
+                        'serif': ['Georgia', 'Times New Roman', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: Georgia, 'Times New Roman', serif;
+            background-color: #ffffff;
+            color: #404F66;
+            scroll-behavior: smooth;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark {
+            background-color: #0F172A;
+            color: #ffffff;
+        }
+        .glass-nav {
+            background-color: #404F66;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at center, rgba(73, 118, 138, 0.05) 0%, transparent 70%);
+        }
+        .dark .hero-gradient {
+            background: radial-gradient(circle at center, rgba(73, 118, 138, 0.15) 0%, transparent 70%);
+        }
+        .card-glow:hover {
+            box-shadow: 0 20px 40px -10px rgba(64, 79, 102, 0.15);
+            transform: translateY(-8px);
+            border-color: #936F2E;
+        }
+        .dark .card-glow:hover {
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        .dark ::-webkit-scrollbar-track { background: #0F172A; }
+        ::-webkit-scrollbar-thumb { background: #404F66; border-radius: 10px; }
+        
+        .footer-bg {
+            background-color: #404F66;
+        }
+        
+        .category-btn.active {
+            background-color: #404F66;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(64, 79, 102, 0.2);
+        }
+        .dark .category-btn.active {
+            background-color: #E2C754;
+            color: #0F172A;
+            box-shadow: 0 4px 15px rgba(226, 199, 84, 0.35);
+        }
+        .modal-enter { animation: modalFade 0.3s ease-out; }
+        @keyframes modalFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* New Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        .animate-scale-in { animation: scaleIn 0.5s ease-out forwards; }
+        
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+
+        .distance-badge {
+            background: rgba(73, 118, 138, 0.1);
+            border: 1px solid rgba(73, 118, 138, 0.2);
+            color: #49768A;
+        }
+        .dark .distance-badge {
+            background: rgba(167, 139, 250, 0.1);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            color: #A78BFA;
+        }
+        
+        .domain-card {
+            background: #8CA6B8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .domain-card:hover {
+            background: #49768A;
+            border-color: #936F2E;
+            transform: translateY(-5px) scale(1.02);
+            color: white;
+            box-shadow: 0 15px 30px rgba(73, 118, 138, 0.2);
+        }
+        .dark .domain-card {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        /* Smooth transitions for interactive elements */
+        button, a, .category-btn, .domain-card, .card-glow {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .btn-hover-effect:hover {
+            transform: translateY(-2px) scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        /* Skeleton Loading Effect */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Preloader Styles */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #0F172A;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease, visibility 0.4s;
+        }
+
+        .loader-logo {
+            font-size: 3rem;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -0.05em;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        .loader-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .loader-progress {
+            position: absolute;
+            height: 100%;
+            width: 50%;
+            background: #E2C754;
+            border-radius: 10px;
+            animation: loading 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.7; }
+        }
+        @keyframes loading {
+            0% { left: -50%; }
+            100% { left: 100%; }
+        }
+        .preloader-hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="loader-logo">SNM</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+        <p class="text-white/40 text-[10px] uppercase tracking-[0.3em] mt-6 font-black">Elite Local Discovery</p>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="glass-nav sticky top-0 z-50 px-6 py-4 flex flex-col md:flex-row items-center gap-6 transition-all duration-300">
+        <div class="flex items-center space-x-3 shrink-0">
+            <div class="bg-white text-primary font-anton text-xl p-2 rounded-xl shadow-lg leading-none">SNM</div>
+            <span class="text-3xl font-anton tracking-wide cursor-pointer text-white hover:text-cta transition-colors hidden lg:block" onclick="window.location.reload()">Service Near Me</span>
+        </div>
+
+        <div class="flex-1 flex flex-col md:flex-row items-center gap-3 w-full">
+            <!-- Location Search in Nav -->
+            <div class="relative w-full md:w-64">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-auto cursor-pointer text-cta hover:text-white transition-colors" onclick="getLocation()" title="Use GPS Location">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                </div>
+                <input 
+                    id="nav-location" 
+                    type="text" 
+                    placeholder="Type area (e.g. Sakchi) & hit Enter" 
+                    onkeydown="if(event.key==='Enter') setManualLocation()"
+                    class="w-full bg-white/10 border border-white/10 rounded-2xl pl-12 pr-4 py-2.5 outline-none text-white text-sm font-medium placeholder:text-white/40 focus:bg-white/20 transition-all font-serif"
+                >
+            </div>
+            
+            <!-- Global Search in Nav -->
+            <div class="relative flex-1 w-full">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input 
+                    id="nav-search"
+                    type="text" 
+                    placeholder="Search for services..." 
+                    class="w-full bg-white/10 border border-white/10 rounded-2xl pl-10 pr-4 py-2.5 outline-none text-white text-sm font-medium placeholder:text-white/30 focus:bg-white/20 transition-all"
+                >
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-6 shrink-0">
+            <button id="theme-toggle" class="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all" title="Toggle Theme">
+                <svg id="theme-icon-dark" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <svg id="theme-icon-light" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            </button>
+
+            <!-- My Bookings Symbol -->
+            <button onclick="openBookings()" class="bg-white/10 hover:bg-white/20 text-white p-2.5 rounded-full transition-all relative" title="My Bookings">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <span id="booking-badge" class="hidden absolute top-0 right-0 w-2.5 h-2.5 bg-cta rounded-full border border-bg-dark"></span>
+            </button>
+
+
+            <div id="auth-buttons" class="flex items-center space-x-4">
+                <button id="login-btn" class="text-white hover:text-cta transition-colors font-black text-xs uppercase tracking-widest">Login</button>
+                <button id="signup-btn" class="bg-cta text-primary px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white hover:text-primary transition-all shadow-lg hidden sm:block">Sign Up</button>
+            </div>
+            <div id="user-info" class="hidden flex items-center space-x-4">
+                <div class="flex flex-col items-end">
+                    <span id="user-name" class="text-sm font-black text-white leading-none"></span>
+                    <span id="user-role" class="text-[10px] font-bold text-cta uppercase tracking-widest mt-1"></span>
+                </div>
+                <button id="logout-btn" class="bg-white/10 hover:bg-white/20 text-white p-2.5 rounded-full transition-all" title="Logout">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+
+        </div>
+    </header>
+
+        <!-- Ad Banner Below Search/Location -->
+        <div class="mt-16 max-w-5xl mx-auto px-4 opacity-0 animate-fade-in-up stagger-3">
+            <div class="bg-gradient-to-r from-primary to-highlight p-1 rounded-[40px] shadow-2xl overflow-hidden group cursor-pointer">
+                <div class="bg-bg-dark rounded-[38px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between relative overflow-hidden">
+                    <div class="relative z-10 text-left md:max-w-md">
+                        <span class="bg-cta text-bg-dark text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest mb-6 inline-block">Exclusive Offer</span>
+                        <h2 class="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter leading-none mb-4">First Booking? <br><span class="text-cta">Get 20% OFF</span></h2>
+                        <p class="text-white/60 font-medium mb-8">Experience premium services at unbeatable prices. Limited time offer for new members.</p>
+                        <button onclick="openAuth('signup')" class="bg-white text-bg-dark font-black px-8 py-3.5 rounded-2xl hover:bg-cta transition-all uppercase tracking-widest text-xs btn-hover-effect">Claim Discount</button>
+                    </div>
+                    <div class="mt-10 md:mt-0 relative z-10 flex items-center justify-center">
+                        <div class="w-40 h-40 bg-cta/10 rounded-full flex items-center justify-center border border-cta/20 group-hover:scale-110 transition-transform duration-700">
+                             <div class="text-6xl group-hover:rotate-12 transition-transform">🎁</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Featured Domains -->
+    <section id="featured-domains" class="px-6 mb-24 max-w-6xl mx-auto">
+        <h2 class="text-sm font-black text-accent uppercase tracking-[0.3em] mb-8 text-center animate-fade-in-up">Featured Domains</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div onclick="setCategory('Hotel')" class="domain-card p-8 rounded-[32px] cursor-pointer text-center group text-primary dark:text-white animate-scale-in stagger-1">
+                <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🏨</div>
+                <h3 class="font-black text-sm uppercase tracking-widest">Hotels</h3>
+            </div>
+            <div onclick="setCategory('Electrician')" class="domain-card p-8 rounded-[32px] cursor-pointer text-center group text-primary dark:text-white animate-scale-in stagger-2">
+                <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">⚡</div>
+                <h3 class="font-black text-sm uppercase tracking-widest">Electricians</h3>
+            </div>
+            <div onclick="setCategory('Health')" class="domain-card p-8 rounded-[32px] cursor-pointer text-center group text-primary dark:text-white animate-scale-in stagger-3">
+                <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🏥</div>
+                <h3 class="font-black text-sm uppercase tracking-widest">Healthcare</h3>
+            </div>
+            <div onclick="setCategory('Food')" class="domain-card p-8 rounded-[32px] cursor-pointer text-center group text-primary dark:text-white animate-scale-in stagger-4">
+                <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🍕</div>
+                <h3 class="font-black text-sm uppercase tracking-widest">Food</h3>
+            </div>
+        </div>
+        <div class="text-center mt-12">
+            <button id="explore-btn" onclick="exploreAll()" class="text-highlight hover:text-primary font-black text-xs uppercase tracking-[0.2em] transition-all border-b border-highlight/20 pb-2">
+                Explore All Services
+            </button>
+        </div>
+    </section>
+
+    <!-- Category Selector (Hidden by default) -->
+    <section id="category-selector" class="px-6 mb-20 overflow-x-auto no-scrollbar hidden">
+        <div class="flex justify-center min-w-max gap-4" id="category-filters">
+            <button data-category="all" class="category-btn active px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest">All</button>
+            <button data-category="Hotel" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">🏨 Hotel</button>
+            <button data-category="Electrician" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">⚡ Electrician</button>
+            <button data-category="Plumber" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">🔧 Plumber</button>
+            <button data-category="Tutors" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">📚 Tutors</button>
+            <button data-category="Food" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">🍕 Food</button>
+            <button data-category="Health" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">🏥 Health</button>
+            <button data-category="Salon" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">✂️ Salon</button>
+            <button data-category="Mechanic" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">🛠️ Mechanic</button>
+            <button data-category="Cleaning" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">🧹 Cleaning</button>
+            <button data-category="Photography" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">📷 Photo</button>
+            <button data-category="Event" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">🎉 Event</button>
+            <button data-category="Interior" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">🏠 Interior</button>
+            <button data-category="Pet" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">🐾 Pet Care</button>
+            <button data-category="IT" class="category-btn bg-white dark:bg-white/5 px-8 py-3 rounded-2xl text-xs font-black border border-gray-200 dark:border-white/10 hover:border-primary transition-all uppercase tracking-widest flex items-center">💻 IT</button>
+        </div>
+    </section>
+
+    <!-- Service Grid -->
+    <main class="px-6 pb-32 max-w-7xl mx-auto">
+        <div id="service-grid" class="flex flex-col space-y-6 max-w-4xl mx-auto">
+            <!-- Dynamic vertical list items injected here -->
+        </div>
+        <div id="no-results" class="hidden text-center py-40">
+            <div class="bg-gray-100 dark:bg-white/5 inline-block p-10 rounded-full mb-8">
+                <svg class="w-16 h-16 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 0112.728 0M9 10a5 5 0 0110 0m-5 10a3 3 0 01-3-3V7a3 3 0 016 0v10a3 3 0 01-3 3z"></path></svg>
+            </div>
+            <p class="text-4xl font-black text-primary/20 dark:text-white/20 uppercase tracking-tighter">No Results Found</p>
+            <p class="text-gray-500 mt-4 font-medium">Refine your search criteria and try again.</p>
+        </div>
+    </main>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="modal-overlay absolute inset-0" onclick="closeAllModals()"></div>
+        <div class="bg-bg-dark border border-white/10 w-full max-w-lg rounded-[40px] relative z-10 p-12 shadow-2xl modal-enter">
+            <h2 id="auth-title" class="text-5xl font-black mb-2 text-white uppercase tracking-tighter leading-none">Welcome</h2>
+            <p id="auth-desc" class="text-gray-500 mb-12 font-medium">Elevate your local experience.</p>
+            
+            <div class="flex gap-4 mb-10 bg-white/5 p-1.5 rounded-2xl">
+                <button id="role-user-btn" class="flex-1 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all">User</button>
+                <button id="role-provider-btn" class="flex-1 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all">Provider</button>
+            </div>
+
+            <form id="auth-form" class="space-y-6">
+                <div id="name-field" class="hidden">
+                    <label class="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-[0.2em]">Full Name</label>
+                    <input type="text" id="auth-name" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-primary outline-none transition-all text-white font-medium">
+                </div>
+                
+                <div id="worker-fields" class="hidden space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-[0.2em]">Business Name</label>
+                            <input type="text" id="biz-name" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-primary outline-none transition-all text-white font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-[0.2em]">Category</label>
+                            <select id="biz-category" class="w-full bg-bg-dark border border-white/10 rounded-2xl px-6 py-4 focus:border-primary outline-none transition-all text-white font-medium">
+                                <option value="Electrician">Electrician</option>
+                                <option value="Plumber">Plumber</option>
+                                <option value="Tutors">Tutors</option>
+                                <option value="Food">Food</option>
+                                <option value="Health">Health</option>
+                                <option value="Salon">Salon</option>
+                                <option value="Mechanic">Mechanic</option>
+                                <option value="Cleaning">Cleaning</option>
+                                <option value="Photography">Photography</option>
+                                <option value="Event">Event</option>
+                                <option value="Interior">Interior</option>
+                                <option value="Pet">Pet Care</option>
+                                <option value="IT">IT Services</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-[0.2em]">Area</label>
+                            <input type="text" id="biz-area" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-primary outline-none transition-all text-white font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-[0.2em]">Image URL</label>
+                            <input type="url" id="biz-image" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-primary outline-none transition-all text-white font-medium" placeholder="https://unsplash.com/...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-[0.2em]">Email Address</label>
+                        <input type="email" id="auth-email" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-primary outline-none transition-all text-white font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-[0.2em]">Password</label>
+                        <input type="password" id="auth-password" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-primary outline-none transition-all text-white font-medium">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-primary text-bg-dark font-black py-5 rounded-2xl hover:bg-white hover:shadow-2xl hover:shadow-primary/30 transition-all mt-6 uppercase tracking-[0.2em] text-xs">
+                    Continue
+                </button>
+            </form>
+            
+            <p class="mt-10 text-xs font-black text-gray-500 text-center uppercase tracking-widest">
+                <span id="auth-switch-text">New to the platform?</span>
+                <button id="auth-switch-btn" class="text-primary hover:text-white ml-2 transition-colors">Sign Up</button>
+            </p>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="modal-overlay absolute inset-0" onclick="closeAllModals()"></div>
+        <div class="bg-bg-dark border border-white/10 w-full max-w-lg rounded-[40px] relative z-10 p-12 shadow-2xl modal-enter">
+            <h2 class="text-4xl font-black mb-6 text-white uppercase tracking-tighter">Support Hub</h2>
+            <div class="space-y-6">
+                <div class="bg-white/5 p-6 rounded-3xl border border-white/5">
+                    <h3 class="text-primary font-black text-sm uppercase tracking-widest mb-2">How to book?</h3>
+                    <p class="text-gray-400 text-sm font-medium">Simply click 'Book Now' on any service card to connect with the provider directly.</p>
+                </div>
+                <div class="bg-white/5 p-6 rounded-3xl border border-white/5">
+                    <h3 class="text-primary font-black text-sm uppercase tracking-widest mb-2">Provider Verification</h3>
+                    <p class="text-gray-400 text-sm font-medium">All experts with the 'Verified' badge have passed our elite background checks.</p>
+                </div>
+                <button onclick="closeAllModals()" class="w-full bg-white/5 hover:bg-white/10 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-xs transition-all">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="report-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="modal-overlay absolute inset-0" onclick="closeAllModals()"></div>
+        <div class="bg-bg-dark border border-white/10 w-full max-w-lg rounded-[40px] relative z-10 p-12 shadow-2xl modal-enter">
+            <h2 class="text-4xl font-black mb-6 text-red-400 uppercase tracking-tighter">Report Issue</h2>
+            <form onsubmit="event.preventDefault(); showToast('Report submitted successfully.'); closeAllModals();" class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-[0.2em]">Reason</label>
+                    <select class="w-full bg-bg-dark border border-white/10 rounded-2xl px-6 py-4 focus:border-red-400 outline-none transition-all text-white font-medium">
+                        <option>Incorrect Information</option>
+                        <option>Poor Service Quality</option>
+                        <option>Inappropriate Behavior</option>
+                        <option>Fraud/Scam</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-[0.2em]">Details</label>
+                    <textarea rows="4" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-red-400 outline-none transition-all text-white font-medium" placeholder="Tell us more..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-red-400 text-bg-dark font-black py-5 rounded-2xl hover:bg-red-500 transition-all uppercase tracking-[0.2em] text-xs">
+                    Submit Report
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Service Detail Modal -->
+    <div id="service-detail-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="modal-overlay absolute inset-0" onclick="closeAllModals()"></div>
+        <div class="bg-bg-dark border border-white/10 w-full max-w-2xl rounded-[40px] relative z-10 p-12 shadow-2xl modal-enter max-h-[90vh] overflow-y-auto">
+            <button onclick="closeAllModals()" class="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <img id="detail-image" src="" alt="Service Image" class="w-full h-64 object-cover rounded-3xl mb-8 border border-white/10">
+            <div class="flex justify-between items-start mb-4">
+                <h2 id="detail-name" class="text-4xl font-black text-white uppercase tracking-tighter leading-none"></h2>
+                <div class="flex flex-col items-end space-y-2">
+                    <div class="flex items-center text-cta text-sm font-black bg-cta/10 px-2.5 py-1.5 rounded-xl border border-cta/10">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                        <span id="detail-rating"></span>
+                    </div>
+                    <div class="text-2xl font-black text-cta tracking-tight">₹<span id="detail-amount"></span></div>
+                </div>
+            </div>
+            <p id="detail-category" class="text-primary-dark text-xs font-black mb-2 uppercase tracking-[0.2em]"></p>
+            <p id="detail-area" class="text-gray-500 text-sm mb-6 font-medium flex items-center">
+                <svg class="w-4 h-4 mr-1.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </p>
+            <p id="detail-description" class="text-gray-300 text-base mb-8 leading-relaxed"></p>
+            <button onclick="handleBooking()" class="w-full bg-primary text-bg-dark font-black py-4 rounded-2xl hover:bg-white hover:shadow-2xl hover:shadow-primary/30 transition-all duration-500 uppercase tracking-[0.2em] text-xs">
+                Book Now
+            </button>
+        </div>
+    </div>
+
+    <!-- My Bookings Modal -->
+    <div id="bookings-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="modal-overlay absolute inset-0" onclick="closeAllModals()"></div>
+        <div class="bg-bg-dark border border-white/10 w-full max-w-2xl rounded-[40px] relative z-10 p-12 shadow-2xl modal-enter max-h-[80vh] overflow-y-auto">
+            <h2 class="text-4xl font-black mb-8 text-white uppercase tracking-tighter leading-none">Your Reservations</h2>
+            <div id="bookings-list" class="space-y-4">
+                <!-- Bookings injected here -->
+            </div>
+            <button onclick="closeAllModals()" class="w-full mt-10 bg-white/5 hover:bg-white/10 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-xs transition-all">Close</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-bg py-20 border-t border-white/5 text-center">
+        <p class="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em] mb-2">Built for Hack Horizon • Team InnoVentures</p>
+        <p class="text-gray-500 text-sm">Email: support@servicenearme.com | Toll-Free: 1-800-123-4567</p>
+    </footer>
+
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-bg-dark border border-white/10 text-white px-8 py-4 rounded-full shadow-2xl font-black text-xs uppercase tracking-widest transition-all duration-300 opacity-0 pointer-events-none z-[200] translate-y-10 flex items-center shadow-primary/20">
+        <svg class="w-5 h-5 mr-3 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span id="toast-msg">Notification message</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        let allServices = [];
+        let currentCategory = 'all';
+        let searchQuery = '';
+        let currentUser = null;
+        let authMode = 'login';
+        let authRole = 'user';
+        let userLocation = null;
+        let isExploring = false;
+
+        const serviceGrid = document.getElementById('service-grid');
+        const noResults = document.getElementById('no-results');
+        const searchInput = document.getElementById('nav-search');
+        const locationInput = document.getElementById('nav-location');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const categorySelector = document.getElementById('category-selector');
+        const featuredDomains = document.getElementById('featured-domains');
+        const locationText = document.getElementById('location-text');
+
+        // ... existing modal consts ...
+        const authModal = document.getElementById('auth-modal');
+        const helpModal = document.getElementById('help-modal');
+        const reportModal = document.getElementById('report-modal');
+        const serviceDetailModal = document.getElementById('service-detail-modal');
+        const detailImage = document.getElementById('detail-image');
+        const detailName = document.getElementById('detail-name');
+        const detailRating = document.getElementById('detail-rating');
+        const detailCategory = document.getElementById('detail-category');
+        const detailArea = document.getElementById('detail-area');
+        const detailDescription = document.getElementById('detail-description');
+        const detailAmount = document.getElementById('detail-amount');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIconDark = document.getElementById('theme-icon-dark');
+        const themeIconLight = document.getElementById('theme-icon-light');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const authButtons = document.getElementById('auth-buttons');
+        const userInfo = document.getElementById('user-info');
+        const userNameDisp = document.getElementById('user-name');
+        const userRoleDisp = document.getElementById('user-role');
+        
+        const authTitle = document.getElementById('auth-title');
+        const authDesc = document.getElementById('auth-desc');
+        const authForm = document.getElementById('auth-form');
+        const authSwitchBtn = document.getElementById('auth-switch-btn');
+        const authSwitchText = document.getElementById('auth-switch-text');
+        const roleUserBtn = document.getElementById('role-user-btn');
+        const roleProviderBtn = document.getElementById('role-provider-btn');
+        const workerFields = document.getElementById('worker-fields');
+        const nameField = document.getElementById('name-field');
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcons(isDark);
+        }
+
+        function updateThemeIcons(isDark) {
+            themeIconDark.classList.toggle('hidden', !isDark);
+            themeIconLight.classList.toggle('hidden', isDark);
+        }
+
+        // --- UNIVERSAL FRONTEND HANDLER ---
+        // This allows the website to work perfectly even without a backend server
+        async function universalFetch(url, options = {}) {
+            const isLocalFile = window.location.protocol === 'file:';
+            
+            // If it's a real API call and we are on a server, try it
+            if (!isLocalFile) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return await response.json();
+                } catch (err) { console.warn("Backend catch, falling back to local..."); }
+            }
+
+            // MOCK LOGIC (Pure Frontend Mode)
+            if (url.includes('/api/services')) {
+                // Return cached services or default list
+                return JSON.parse(localStorage.getItem('mock_services')) || [];
+            }
+            
+            if (url.includes('/api/auth/signup')) {
+                const data = JSON.parse(options.body);
+                const users = JSON.parse(localStorage.getItem('mock_users') || '[]');
+                if (users.find(u => u.email === data.email)) throw new Error("Email exists");
+                data.id = Date.now();
+                users.push(data);
+                localStorage.setItem('mock_users', JSON.stringify(users));
+                return data;
+            }
+
+            if (url.includes('/api/auth/login')) {
+                const data = JSON.parse(options.body);
+                const users = JSON.parse(localStorage.getItem('mock_users') || '[]');
+                const user = users.find(u => u.email === data.email && u.password === data.password);
+                if (!user) throw new Error("Invalid credentials");
+                return user;
+            }
+            
+            return null;
+        }
+
+        // Initialize mock data if empty
+        if (!localStorage.getItem('mock_services')) {
+            fetch('services.json').then(r => r.json()).then(data => {
+                localStorage.setItem('mock_services', JSON.stringify(data));
+                if (allServices.length === 0) fetchServices();
+            }).catch(() => {
+                // Final fallback if even services.json is missing
+                localStorage.setItem('mock_services', JSON.stringify([
+                    { "id": 1, "name": "RK Electricals", "category": "Electrician", "area": "Sakchi", "rating": 4.8, "lat": 22.8015, "lng": 86.2029, "image": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800", "verified": true, "amount": 250, "description": "Expert electrical services." },
+                    { "id": 51, "name": "Hotel Marine Drive", "category": "Hotel", "area": "Sonari", "rating": 4.8, "lat": 22.8155, "lng": 86.1602, "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800", "verified": true, "amount": 2500, "description": "Luxury stay." }
+                ]));
+            });
+        }
+
+        // Initialize Theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark');
+            updateThemeIcons(true);
+        } else {
+            updateThemeIcons(false);
+        }
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = message;
+            toast.classList.remove('opacity-0', 'translate-y-10');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-10');
+            }, 3000);
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                locationInput.value = "Locating via GPS...";
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        locationInput.value = "Your Exact Location";
+                        showToast("Sorted by your local distance.");
+                        renderCards();
+                    },
+                    (error) => {
+                        showToast("Error getting location: " + error.message);
+                        locationInput.value = "";
+                    }
+                );
+            } else {
+                showToast("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Feature: Custom manual location set & sort nearest to top
+        function setManualLocation() {
+            const val = locationInput.value.toLowerCase().trim();
+            if (!val) {
+                userLocation = null;
+                renderCards();
+                return;
+            }
+            // Find a service in the area to use as a coordinate anchor
+            const areaService = allServices.find(s => s.area.toLowerCase().includes(val));
+            if (areaService) {
+                userLocation = { lat: areaService.lat, lng: areaService.lng };
+                showToast("Location updated. Showing nearest services first.");
+                renderCards();
+                serviceGrid.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                showToast("Area not found in our database. Showing all.");
+                userLocation = null;
+                renderCards();
+            }
+        }
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            isExploring = true;
+            categorySelector.classList.remove('hidden');
+            featuredDomains.classList.add('hidden');
+            categoryBtns.forEach(b => {
+                b.classList.toggle('active', b.getAttribute('data-category') === cat);
+            });
+            renderCards();
+            serviceGrid.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function exploreAll() {
+            isExploring = true;
+            categorySelector.classList.remove('hidden');
+            featuredDomains.classList.add('hidden');
+            renderCards();
+        }
+
+        async function fetchServices() {
+            try {
+                allServices = await universalFetch('/api/services');
+                renderCards();
+            } catch (err) { 
+                console.error("Critical Fetch Error", err);
+            }
+        }
+
+        async function authSignup(data) {
+            return await universalFetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }
+
+        async function authLogin(data) {
+            return await universalFetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }
+
+
+        function renderCards() {
+            let filteredData = allServices.filter(item => {
+                const matchesCategory = currentCategory === 'all' || item.category === currentCategory;
+                const searchLower = searchQuery.toLowerCase();
+                const matchesSearch = item.name.toLowerCase().includes(searchLower) || 
+                                    item.area.toLowerCase().includes(searchLower) ||
+                                    item.category.toLowerCase().includes(searchLower);
+                return matchesCategory && matchesSearch;
+            });
+
+            // Calculate distance and sort
+            if (userLocation) {
+                filteredData = filteredData.map(item => ({
+                    ...item,
+                    distance: calculateDistance(userLocation.lat, userLocation.lng, item.lat, item.lng)
+                })).sort((a, b) => a.distance - b.distance);
+            }
+
+            serviceGrid.innerHTML = '';
+            if (filteredData.length === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+                filteredData.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    const staggerClass = `stagger-${(index % 4) + 1}`;
+                    card.className = `bg-white/5 dark:bg-white/5 rounded-[32px] overflow-hidden card-glow cursor-pointer flex flex-col md:flex-row group border border-white/5 backdrop-blur-md transition-all duration-500 animate-fade-in-up ${staggerClass}`;
+                    
+                    // Generate a random but consistent beautiful image from picsum for the robust image fixing
+                    const reliableImage = `https://picsum.photos/seed/${item.name.replace(/\s+/g, '')}/800/600`;
+
+                    card.innerHTML = `
+                        <div class="relative w-full md:w-5/12 h-64 md:h-auto overflow-hidden shrink-0">
+                            <img src="${reliableImage}" alt="${item.name}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000">
+                            
+                            <!-- Vertical Rating Bar -->
+                            <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center bg-bg-dark/80 backdrop-blur-xl border border-white/10 rounded-2xl px-2 py-4 shadow-2xl space-y-2 z-20 group-hover:bg-cta transition-all duration-500">
+                                <svg class="w-4 h-4 text-cta group-hover:text-bg-dark" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                <span class="text-white group-hover:text-bg-dark font-black text-sm font-inter">${item.rating}</span>
+                                <div class="w-0.5 h-8 bg-white/10 group-hover:bg-bg-dark/20"></div>
+                                <span class="text-[8px] uppercase font-black text-white/40 group-hover:text-bg-dark/50 [writing-mode:vertical-lr]">Rating</span>
+                            </div>
+
+                            <div class="absolute top-5 left-5 flex flex-col space-y-2">
+                                ${item.verified ? `
+                                    <div class="bg-accent-green text-bg-dark text-[10px] font-black px-4 py-2 rounded-full flex items-center space-x-1.5 shadow-2xl">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                        <span class="uppercase tracking-[0.1em] font-sans">Verified</span>
+                                    </div>
+                                ` : ''}
+                                ${item.distance !== undefined ? `
+                                    <div class="distance-badge text-[10px] font-black px-4 py-2 rounded-full flex items-center space-x-1.5 shadow-2xl backdrop-blur-md">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                        <span class="uppercase tracking-[0.1em] font-sans">${item.distance.toFixed(1)} km away</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="p-8 md:p-10 flex flex-col flex-grow justify-center">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-3xl leading-tight text-primary dark:text-white group-hover:text-cta transition-colors">${item.name}</h3>
+                                <div class="mt-1 text-2xl font-bold text-primary dark:text-cta tracking-tight">₹${item.amount}</div>
+                            </div>
+                            <p class="text-accent text-sm font-bold mb-4 uppercase tracking-[0.2em] font-sans">${item.category}</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-lg mb-6 font-medium flex items-center">
+                                <svg class="w-5 h-5 mr-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                ${item.area}
+                            </p>
+                            <p class="text-gray-600 dark:text-gray-300 mb-8 italic line-clamp-2">${item.description}</p>
+                            
+                            <div class="mt-auto">
+                                <button class="w-full md:w-auto px-10 bg-cta text-primary font-black py-4 rounded-2xl hover:bg-white hover:text-primary hover:shadow-2xl transition-all duration-500 uppercase tracking-[0.2em] text-xs btn-hover-effect font-sans">
+                                    Book Now
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => openServiceDetail(item));
+                    serviceGrid.appendChild(card);
+                });
+            }
+        }
+
+        function updateNav() {
+            if (currentUser) {
+                authButtons.classList.add('hidden');
+                userInfo.classList.remove('hidden');
+                userNameDisp.innerText = currentUser.name;
+                userRoleDisp.innerText = currentUser.role === 'worker' ? 'Provider' : 'User';
+            } else {
+                authButtons.classList.remove('hidden');
+                userInfo.classList.add('hidden');
+            }
+        }
+
+        function setRole(role) {
+            authRole = role;
+            roleUserBtn.className = role === 'user' ? 'flex-1 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all bg-primary text-bg-dark shadow-lg shadow-primary/20' : 'flex-1 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all text-gray-500 hover:text-white';
+            roleProviderBtn.className = role === 'provider' ? 'flex-1 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all bg-primary text-bg-dark shadow-lg shadow-primary/20' : 'flex-1 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all text-gray-500 hover:text-white';
+            
+            if (authMode === 'signup') {
+                workerFields.classList.toggle('hidden', role !== 'provider');
+            }
+        }
+
+        function closeAllModals() {
+            authModal.classList.add('hidden'); authModal.classList.remove('flex');
+            helpModal.classList.add('hidden'); helpModal.classList.remove('flex');
+            reportModal.classList.add('hidden'); reportModal.classList.remove('flex');
+            serviceDetailModal.classList.add('hidden'); serviceDetailModal.classList.remove('flex');
+            document.getElementById('bookings-modal').classList.add('hidden');
+            document.getElementById('bookings-modal').classList.remove('flex');
+        }
+
+        function openBookings() {
+            if (!currentUser) { showToast('Login to view bookings'); openAuth('login'); return; }
+            const list = document.getElementById('bookings-list');
+            const bookings = JSON.parse(localStorage.getItem(`bookings_${currentUser.id}`) || '[]');
+            
+            const isProvider = currentUser.role === 'worker';
+            document.querySelector('#bookings-modal h2').innerText = isProvider ? "Provider Dashboard" : "Your Reservations";
+
+            if (bookings.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 font-medium text-center py-10 font-sans">${isProvider ? "No services assigned to you yet." : "No active bookings found."}</p>`;
+            } else {
+                list.innerHTML = '';
+            }
+            
+            bookings.reverse().forEach(b => {
+                const item = document.createElement('div');
+                item.className = 'bg-white/5 p-6 rounded-[28px] border border-white/5 flex items-center justify-between group hover:border-cta/30 transition-all';
+                item.innerHTML = `
+                    <div class="flex items-center space-x-6">
+                        <img src="${b.image}" class="w-16 h-16 rounded-2xl object-cover">
+                        <div>
+                            <h4 class="font-black text-white uppercase tracking-tight">${b.serviceName}</h4>
+                            <p class="text-cta text-[10px] font-black uppercase tracking-widest mt-1">${b.category}</p>
+                            <p class="text-gray-500 text-[10px] font-medium mt-0.5">${b.date}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="bg-primary/20 text-primary text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">Active</span>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+            
+            document.getElementById('bookings-modal').classList.remove('hidden');
+            document.getElementById('bookings-modal').classList.add('flex');
+        }
+
+
+        function openAuth(mode) {
+            authMode = mode;
+            authModal.classList.remove('hidden');
+            authModal.classList.add('flex');
+            nameField.classList.toggle('hidden', mode === 'login');
+            if (mode === 'login') {
+                authTitle.innerText = 'Welcome Back';
+                authDesc.innerText = 'Log in to your elite account.';
+                authSwitchText.innerText = "New to the platform?";
+                authSwitchBtn.innerText = 'SIGN UP';
+                workerFields.classList.add('hidden');
+            } else {
+                authTitle.innerText = 'Join Now';
+                authDesc.innerText = 'Create your SNM account.';
+                authSwitchText.innerText = "Already a member?";
+                authSwitchBtn.innerText = 'LOGIN';
+                setRole(authRole);
+            }
+        }
+
+        function openHelp() { helpModal.classList.remove('hidden'); helpModal.classList.add('flex'); }
+        function openReport() { reportModal.classList.remove('hidden'); reportModal.classList.add('flex'); }
+
+        function openServiceDetail(service) {
+            detailImage.onerror = () => { detailImage.src = 'https://via.placeholder.com/800x600?text=Service'; detailImage.onerror = null; };
+            detailImage.referrerPolicy = 'no-referrer';
+            detailImage.src = service.image;
+            detailName.innerText = service.name;
+            detailRating.innerText = service.rating;
+            detailAmount.innerText = service.amount;
+            detailCategory.innerText = service.category;
+            detailArea.innerText = service.area;
+            detailDescription.innerText = service.description || 'No description available.'; 
+            
+            // Store target service for booking logic
+            serviceDetailModal.dataset.currentService = JSON.stringify(service);
+            
+            serviceDetailModal.classList.remove('hidden');
+            serviceDetailModal.classList.add('flex');
+        }
+
+        function handleBooking() {
+            if (!currentUser) {
+                closeAllModals();
+                showToast('Please login to book a service.');
+                openAuth('login');
+                return;
+            }
+            
+            const service = JSON.parse(serviceDetailModal.dataset.currentService);
+            const bookings = JSON.parse(localStorage.getItem(`bookings_${currentUser.id}`) || '[]');
+            
+            bookings.push({
+                serviceId: service.id,
+                serviceName: service.name,
+                category: service.category,
+                image: service.image,
+                date: new Date().toLocaleDateString('en-GB')
+            });
+            
+            localStorage.setItem(`bookings_${currentUser.id}`, JSON.stringify(bookings));
+            updateBookingBadge();
+            
+            showToast('Booking confirmed! Reservation added to your account.');
+            closeAllModals();
+        }
+
+        function updateBookingBadge() {
+            if (!currentUser) return;
+            const badge = document.getElementById('booking-badge');
+            const bookings = JSON.parse(localStorage.getItem(`bookings_${currentUser.id}`) || '[]');
+            badge.classList.toggle('hidden', bookings.length === 0);
+        }
+
+
+        searchInput.addEventListener('input', (e) => { 
+            searchQuery = e.target.value; 
+            if (searchQuery === '' && currentCategory === 'all' && !isExploring) {
+                featuredDomains.classList.remove('hidden');
+                categorySelector.classList.add('hidden');
+            } else {
+                featuredDomains.classList.add('hidden');
+                categorySelector.classList.remove('hidden');
+            }
+            renderCards(); 
+        });
+
+        categoryBtns.forEach(btn => btn.addEventListener('click', () => {
+            categoryBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentCategory = btn.getAttribute('data-category');
+            isExploring = true; // Once they interact with filters, we are in exploration mode
+            featuredDomains.classList.add('hidden');
+            categorySelector.classList.remove('hidden');
+            renderCards();
+        }));
+
+        loginBtn.addEventListener('click', () => openAuth('login'));
+        signupBtn.addEventListener('click', () => openAuth('signup'));
+        logoutBtn.addEventListener('click', () => { currentUser = null; localStorage.removeItem('currentUser'); updateNav(); });
+        authSwitchBtn.addEventListener('click', () => openAuth(authMode === 'login' ? 'signup' : 'login'));
+        roleUserBtn.addEventListener('click', () => setRole('user'));
+        roleProviderBtn.addEventListener('click', () => setRole('provider'));
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                if (authMode === 'signup') {
+                    const payload = {
+                        role: authRole === 'provider' ? 'worker' : 'user',
+                        name: document.getElementById('auth-name').value,
+                        email: document.getElementById('auth-email').value,
+                        password: document.getElementById('auth-password').value
+                    };
+                    if (authRole === 'provider') {
+                        payload.business = {
+                            name: document.getElementById('biz-name').value,
+                            category: document.getElementById('biz-category').value,
+                            area: document.getElementById('biz-area').value,
+                            image: document.getElementById('biz-image').value
+                        };
+                    }
+                    currentUser = await authSignup(payload);
+                } else {
+                    currentUser = await authLogin({
+                        email: document.getElementById('auth-email').value,
+                        password: document.getElementById('auth-password').value
+                    });
+                }
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateNav();
+                closeAllModals();
+                showToast("Authentication successful!");
+            } catch (err) { showToast(err.message); }
+        });
+
+        fetchServices();
+        const saved = localStorage.getItem('currentUser');
+        if (saved) {
+            currentUser = JSON.parse(saved);
+            updateBookingBadge();
+        }
+        updateNav();
+
+        // Loading Screen Handler - Lingering for 6 seconds as requested
+        const hideLoader = () => {
+            const loader = document.getElementById('preloader');
+            if (loader && !loader.classList.contains('preloader-hidden')) {
+                loader.classList.add('preloader-hidden');
+            }
+        };
+
+        window.addEventListener('load', () => {
+            setTimeout(hideLoader, 6000); // Strict 6 asecond wait
+        });
+
+        // Safety timeout: 10 seconds total max
+        setTimeout(hideLoader, 10000);
+    </script>
+</body>
+</html>
