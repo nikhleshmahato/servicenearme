@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
@@ -11,7 +10,7 @@ const DATA_FILE = path.join(__dirname, 'services.json');
 const USERS_FILE = path.join(__dirname, 'users.json');
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(express.static(__dirname));
 
 // Helper to read data
@@ -51,9 +50,20 @@ app.get('/api/services', (req, res) => {
 // POST a new service (List a Business)
 app.post('/api/services', (req, res) => {
     const services = readServices();
+    const { name, category, area, image, amount, description, lat, lng } = req.body || {};
+    if (!name || !category || !area || !image) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
     const newService = {
         id: services.length > 0 ? Math.max(...services.map(s => s.id)) + 1 : 1,
-        ...req.body,
+        name,
+        category,
+        area,
+        image,
+        amount: typeof amount === 'number' ? amount : 0,
+        description: description || '',
+        lat: typeof lat === 'number' ? lat : undefined,
+        lng: typeof lng === 'number' ? lng : undefined,
         verified: false, // Default to false for new entries
         rating: 5.0 // Default rating
     };
@@ -90,6 +100,8 @@ app.post('/api/auth/signup', async (req, res) => {
             category: business.category,
             area: business.area,
             image: business.image,
+            amount: 0,
+            description: '',
             verified: false,
             rating: 5.0
         };
