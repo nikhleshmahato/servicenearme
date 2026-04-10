@@ -143,8 +143,7 @@ This platform helps strengthen the local economy and improves access to services
 
 ## Team
 
-A4 Apple 
-Arka Jain University
+A4 Apple
 
 --------------------------------------------------
 
