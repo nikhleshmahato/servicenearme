@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Near Me | Pro Network</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@800&family=Outfit:wght@300;400;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <style>
+    :root {
+      --bg: #050508;
+      --surface: #0f0f15;
+      --card: #16161f;
+      --border: #262635;
+      --accent: #e8ff47;
+      --accent2: #47ffe0;
+      --text: #f0f0f8;
+      --muted: #8888a0;
+      --nav-height: 80px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    h1,
+    h2,
+    h3,
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      text-transform: uppercase;
+    }
+
+    .mono {
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Navigation */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 2000;
+      height: var(--nav-height);
+      background: rgba(5, 5, 8, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-content {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .search-container {
+      flex-grow: 1;
+      max-width: 450px;
+      position: relative;
+    }
+
+    .search-bar {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 12px 15px 12px 45px;
+      border-radius: 50px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.5;
+    }
+
+    /* Map Interface */
+    .map-section {
+      width: 90%;
+      max-width: 1200px;
+      margin: 30px auto;
+      position: relative;
+      z-index: 10;
+      transition: all 0.4s ease;
+    }
+
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      filter: hue-rotate(180deg) invert(90%) brightness(0.8);
+    }
+
+    .map-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      z-index: 1000;
+      background: var(--surface);
+      color: var(--accent2);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .fullscreen-container {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      margin: 0 !important;
+      z-index: 9999;
+    }
+
+    .fullscreen-container #map {
+      height: 100% !important;
+      border-radius: 0 !important;
+    }
+
+    /* HUD & Slider */
+    .loc-hud {
+      background: var(--surface);
+      border: 1px solid var(--accent2);
+      padding: 8px 16px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin: 40px auto 10px;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--accent2);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(71, 255, 224, 0.7);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(71, 255, 224, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(71, 255, 224, 0);
+      }
+    }
+
+    .slider-section {
+      position: relative;
+      padding: 40px 0;
+      overflow: hidden;
+    }
+
+    .slider-track {
+      display: flex;
+      gap: 24px;
+      will-change: transform;
+      transition: transform 0.1s linear;
+    }
+
+    .user-card {
+      flex: 0 0 320px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 25px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .user-card:hover {
+      border-color: var(--accent2);
+      transform: translateY(-5px);
+    }
+
+    .ctrl-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: #fff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .prev {
+      left: 20px;
+    }
+
+    .next {
+      right: 20px;
+    }
+
+    /* Profile Display Overlay */
+    .profile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 15000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .profile-overlay.active {
+      display: flex;
+    }
+
+    .profile-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      width: 90%;
+      max-width: 500px;
+      border-radius: 32px;
+      padding: 40px;
+      position: relative;
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .close-profile {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+
+    /* Footer */
+    footer {
+      background: #000;
+      border-top: 1px solid var(--border);
+      padding: 80px 24px 40px;
+      margin-top: 60px;
+    }
+
+    .footer-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+    }
+
+    .footer-col a {
+      color: var(--muted);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    /* Modal (Broadcast) */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 20000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 40px;
+      border-radius: 32px;
+      width: 90%;
+      max-width: 450px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 15px;
+      margin: 8px 0;
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Outfit';
+      outline: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="nav-content">
+      <div class="nav-logo">Service <span>Near Me</span></div>
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-bar" id="navSearch" placeholder="Filter node broadcasts...">
+      </div>
+      <button onclick="toggleModal(true)"
+        style="background:var(--accent2); border:none; padding:10px 20px; border-radius:50px; font-weight:800; cursor:pointer;">JOIN
+        FEED</button>
+    </div>
+  </nav>
+
+  <div style="text-align: center;">
+    <div class="loc-hud">
+      <div class="pulse"></div>
+      <div class="mono" style="font-size: 0.75rem;">LIVE_LOCATION: <span id="currentCoords"
+          style="color:var(--accent2)">DETECTING...</span></div>
+    </div>
+    <h1 style="font-size: clamp(2rem, 6vw, 3.5rem); line-height: 1; margin-bottom: 10px;">The Neighborhood<br><span
+        style="color:var(--accent)">Nearby Service Network.</span></h1>
+  </div>
+
+  <div class="map-section" id="mapContainer">
+    <button class="map-btn" onclick="toggleMap()" id="mapToggle">⛶</button>
+    <button class="map-btn" onclick="locateUser()" id="locateBtn" style="right: 70px;">🎯</button>
+    <div id="map"></div>
+  </div>
+
+  <section class="slider-section">
+    <button class="ctrl-btn prev" onclick="manualShift('prev')">←</button>
+    <div class="slider-track" id="userList"></div>
+    <button class="ctrl-btn next" onclick="manualShift('next')">→</button>
+  </section>
+
+  <div class="profile-overlay" id="profileOverlay">
+    <div class="profile-box" id="profileContent">
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="nav-logo" style="margin-bottom: 20px;">Service <span>Near Me</span></div>
+        <p style="color: var(--muted); font-size: 0.85rem;">P2P Local Matchmaking Protocol.</p>
+      </div>
+      <div class="footer-col">
+        <h4 class="mono" style="color:var(--accent2); margin-bottom:15px; font-size:0.8rem;">CONTACT_LINKS</h4>
+        <a href="mailto:support@servicenearme.io">Technical Support</a>
+        <a href="#">Report Issue</a>
+      </div>
+      <div class="footer-col">
+        <h4 class="mono" style="color:var(--accent2); margin-bottom:15px; font-size:0.8rem;">NETWORK_STATUS</h4>
+        <p class="mono" style="font-size: 0.7rem; color: var(--accent);">● ACTIVE_BROADCAST</p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-card">
+      <h2 style="margin-bottom: 20px;">New Services</h2>
+      <form id="profileForm">
+        <input type="text" id="userName" placeholder="Your Name" required>
+        <select id="userRole">
+          <option value="Customer">I Need Help</option>
+          <option value="Provider">I Offer Help</option>
+        </select>
+        <input type="text" id="serviceType" placeholder="Service (e.g. Electrician)" required>
+        <textarea id="userBio" placeholder="Details/Contact..." rows="3" required></textarea>
+        <button type="submit"
+          style="background:var(--accent2); color:var(--bg); border:none; width:100%; padding:16px; border-radius:12px; font-weight:800; cursor:pointer;">START
+          BROADCAST</button>
+        <p onclick="toggleModal(false)"
+          style="text-align:center; margin-top:15px; cursor:pointer; font-size:0.8rem; color:var(--muted);">[ DISMISS ]
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBljdkRJ5QTJabDzwLc5BfGm0wSYwwzKLY",
+      authDomain: "service-eac6b.firebaseapp.com",
+      projectId: "service-eac6b",
+      storageBucket: "service-eac6b.firebasestorage.app",
+      messagingSenderId: "452215052310",
+      appId: "1:452215052310:web:7aadc87d6a6a10436e3d37"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const map = L.map('map', { zoomControl: false }).setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    let userMarker, routingLine, rawData = [], isFullscreen = false;
+
+    window.toggleMap = () => {
+      isFullscreen = !isFullscreen;
+      document.getElementById("mapContainer").classList.toggle("fullscreen-container", isFullscreen);
+      setTimeout(() => map.invalidateSize(), 400);
+    };
+
+    window.locateUser = () => {
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        document.getElementById('currentCoords').innerText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        if (userMarker) map.removeLayer(userMarker);
+        userMarker = L.circleMarker([lat, lng], { radius: 10, fillColor: "#47ffe0", color: "#fff", weight: 2, fillOpacity: 0.8 }).addTo(map);
+        map.flyTo([lat, lng], 14);
+      });
+    };
+
+    const list = document.getElementById('userList');
+    let offset = 0, isAuto = true;
+
+    window.showProfile = (data) => {
+      const overlay = document.getElementById('profileOverlay');
+      const content = document.getElementById('profileContent');
+
+      // UI for Profile
+      content.innerHTML = `
+      <div class="close-profile" onclick="document.getElementById('profileOverlay').classList.remove('active')">✕ CLOSE</div>
+      <div class="mono" style="color:var(--accent2); font-size:0.7rem; border:1px solid; width:fit-content; padding:2px 10px; border-radius:4px; margin-bottom:20px;">BROADCAST_DETAILS</div>
+      <h2 style="font-size:2rem; margin-bottom:5px;">${data.name}</h2>
+      <p class="mono" style="color:var(--accent); margin-bottom:25px;">${data.serviceType || data.serviceDetail}</p>
+      <div style="background:var(--surface); padding:20px; border-radius:15px; border:1px solid var(--border); margin-bottom:25px;">
+        <p style="color:var(--muted); line-height:1.6; font-size:0.95rem;">${data.bio}</p>
+      </div>
+      <button onclick="document.getElementById('profileOverlay').classList.remove('active')" style="background:var(--accent2); border:none; width:100%; padding:15px; border-radius:12px; font-weight:800; cursor:pointer;">RETURN TO MAP</button>
+    `;
+      overlay.classList.add('active');
+
+      // Routing in background
+      if (data.coords) {
+        map.flyTo(data.coords, 15);
+        navigator.geolocation.getCurrentPosition(pos => {
+          const userLoc = [pos.coords.latitude, pos.coords.longitude];
+          if (routingLine) map.removeLayer(routingLine);
+          routingLine = L.polyline([userLoc, data.coords], { color: 'var(--accent)', weight: 3, dashArray: '10, 15' }).addTo(map);
+        });
+      }
+    };
+
+    function renderCards(data) {
+      list.innerHTML = "";
+      [...data, ...data, ...data].forEach(d => {
+        const card = document.createElement('div');
+        card.className = "user-card";
+        card.onclick = () => showProfile(d);
+        card.innerHTML = `
+        <div class="mono" style="font-size:10px; color:${d.role === 'Customer' ? 'var(--accent)' : 'var(--accent2)'}; border:1px solid; width:fit-content; padding:2px 8px; border-radius:4px; margin-bottom:12px;">${d.role}</div>
+        <h3 style="margin-bottom:4px;">${d.name}</h3>
+        <p class="mono" style="color:var(--accent2); font-size:0.75rem;">${d.serviceType || d.serviceDetail}</p>
+      `;
+        list.appendChild(card);
+        if (d.coords) L.marker(d.coords).addTo(map).bindPopup(d.name);
+      });
+    }
+
+    onSnapshot(query(collection(db, "users"), orderBy("timestamp", "desc")), (snap) => {
+      rawData = snap.docs.map(doc => doc.data());
+      renderCards(rawData);
+      startLoop();
+    });
+
+    function startLoop() {
+      const step = () => {
+        if (isAuto && list.scrollWidth > window.innerWidth) {
+          offset -= 0.8;
+          if (Math.abs(offset) >= (list.scrollWidth / 3)) offset = 0;
+          list.style.transform = `translateX(${offset}px)`;
+        }
+        requestAnimationFrame(step);
+      };
+      step();
+    }
+
+    window.manualShift = (dir) => {
+      isAuto = false;
+      offset = dir === 'next' ? offset - 344 : offset + 344;
+      list.style.transform = `translateX(${offset}px)`;
+      setTimeout(() => isAuto = true, 4000);
+    };
+
+    window.toggleModal = (s) => document.getElementById('authModal').classList.toggle('active', s);
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      navigator.geolocation.getCurrentPosition(async p => {
+        await addDoc(collection(db, "users"), {
+          name: document.getElementById('userName').value,
+          role: document.getElementById('userRole').value,
+          serviceType: document.getElementById('serviceType').value,
+          bio: document.getElementById('userBio').value,
+          coords: [p.coords.latitude, p.coords.longitude],
+          timestamp: new Date()
+        });
+        toggleModal(false);
+        document.getElementById('profileForm').reset();
+      });
+    });
+
+    locateUser();
+  </script>
+
+</body>
+
+</html>
